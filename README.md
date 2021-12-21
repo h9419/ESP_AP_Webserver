@@ -20,8 +20,11 @@ In the included application, setState is only called on websocket message so tha
 
 ## Installation and setup
 
-1. Install [VSCode](https://code.visualstudio.com/) or [VSCodium](https://vscodium.com/), then install the [Platform IO extension](https://platformio.org/install/ide?install=vscode)
-2. Install [Node.js](https://nodejs.org/en/) for npm and your extension of choice for JavaScript
+1. Install [Arduino IDE](https://www.arduino.cc/en/software)
+    * Also install the ESP32 board support, [video guide here](https://youtu.be/mBaS3YnqDaU)
+2. Install [VSCode](https://code.visualstudio.com/) or [VSCodium](https://vscodium.com/)
+    * Install the [Platform IO extension](https://platformio.org/install/ide?install=vscode)
+3. Install [Node.js](https://nodejs.org/en/) for npm and your extension of choice for JavaScript
 
 ## Uploading to ESP32
 
