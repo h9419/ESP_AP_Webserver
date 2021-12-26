@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <DNSServer.h>
-#include <SPIFFS.h>
+#include <LITTLEFS.h>
 #include <ESPAsyncWebServer.h>
 #include "wsEventHandler.h"
 
@@ -39,9 +39,9 @@ void setup()
   // Serial.println("IP address: ");
   // Serial.println(WiFi.softAPIP());
 
-  if (!SPIFFS.begin())
+  if (!LITTLEFS.begin())
   {
-    // Serial.println("An Error has occurred while mounting SPIFFS");
+    // Serial.println("An Error has occurred while mounting LITTLEFS");
     return;
   }
 
@@ -54,12 +54,12 @@ void setup()
 #ifdef VERBOSE
               Serial.println("Serving file:  /index.html");
 #endif
-              AsyncWebServerResponse *response = request->beginResponse(SPIFFS, "/index.html", "text/html");
+              AsyncWebServerResponse *response = request->beginResponse(LITTLEFS, "/index.html", "text/html");
               response->addHeader("Content-Encoding", "gzip");
               request->send(response);
             });
 
-  File root = SPIFFS.open("/");
+  File root = LITTLEFS.open("/");
   while (File file = root.openNextFile())
   {
     String filename = file.name();
@@ -90,7 +90,7 @@ void setup()
                   contentType = "application/x-font-opentype";
                 else
                   contentType = "text/plain";
-                AsyncWebServerResponse *response = request->beginResponse(SPIFFS, filename, contentType);
+                AsyncWebServerResponse *response = request->beginResponse(LITTLEFS, filename, contentType);
                 response->addHeader("Content-Encoding", "gzip");
                 request->send(response);
               });
