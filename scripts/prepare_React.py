@@ -38,26 +38,20 @@ def renameReactAssets( source, target, env ):
         shutil.rmtree(data_dir_path)
     print('Rename: Re-creating an empty data directory ' + data_dir_path)
     os.mkdir(data_dir_path)
-    files_to_copy = ["asset-manifest.json", "favicon.ico"]
+    files_to_copy = ["favicon.ico"]
     for file in files_to_copy:
         print('Rename: Copying file: ' + file + ' to the data directory' + data_dir_path)
         shutil.copy(data_src_dir_path + "/" + file, data_dir_path)
-    replacedNames = ["/index.html", "/index.html"]
-    with open(data_dir_path + "/asset-manifest.json", 'r+') as f:
+    replacedNames = ["index.html", "index.html"]
+    with open(data_src_dir_path + "/asset-manifest.json", 'r') as f:
         data = json.load(f)
-        # edit entrypoints
-        data['entrypoints'] = list(map(lambda str : "main." + str.split(".")[-1], data['entrypoints']))
         # edit files
         for key in data['files']:
-            if key == "index.html": continue
+            if key in replacedNames: continue
             src_name = data['files'][key]
             dst_name = sub(r'/([^/]+/)*([^.]+).[^.]+',r'/\2',src_name)
-            # shutil.copy(data_src_dir_path + src_name, data_dir_path + dst_name)
             replacedNames += (src_name[1:], dst_name[1:])
-            data['files'][key] = dst_name
-        f.seek(0)        # <--- should reset file position to the beginning.
-        json.dump(data, f, indent=2)
-        f.truncate()     # remove remaining part
+    # move each file in manifest
     for i in range(0, len(replacedNames), 2):
         ext = replacedNames[i].split(".")[-1]
         if ext == "js" or ext == "css" or ext == "html" or ext == "htm" or ext == "txt":
@@ -69,6 +63,8 @@ def renameReactAssets( source, target, env ):
                         for i in range(0, len(replacedNames), 2):
                             outLine = outLine.replace(replacedNames[i], replacedNames[i+1])
                         outFile.write(outLine)
+        elif ext == "map":
+            continue
         else:
             print("Copying " + replacedNames[i] + " to " + replacedNames[i+1])
             shutil.copy(data_src_dir_path + "/" + replacedNames[i], data_dir_path + "/" + replacedNames[i+1])
