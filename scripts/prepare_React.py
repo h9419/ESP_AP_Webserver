@@ -69,4 +69,4 @@ def renameReactAssets( source, target, env ):
             print("Copying " + replacedNames[i] + " to " + replacedNames[i+1])
             shutil.copy(data_src_dir_path + "/" + replacedNames[i], data_dir_path + "/" + replacedNames[i+1])
 
-env.AddPreAction( '$BUILD_DIR/${ESP32_SPIFFS_IMAGE_NAME}.bin', renameReactAssets )
+env.AddPreAction( '$BUILD_DIR/littlefs.bin', renameReactAssets )

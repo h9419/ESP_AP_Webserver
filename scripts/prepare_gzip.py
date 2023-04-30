@@ -66,4 +66,4 @@ def gzip_webfiles( source, target, env ):
     else:
         print( 'GZIP: Compressed correctly.\n' )
 # IMPORTANT, this needs to be added to call the routine
-env.AddPreAction( '$BUILD_DIR/${ESP32_SPIFFS_IMAGE_NAME}.bin', gzip_webfiles )
+env.AddPreAction( '$BUILD_DIR/littlefs.bin', gzip_webfiles )
