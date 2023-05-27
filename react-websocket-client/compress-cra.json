@@ -1,0 +1,19 @@
+{
+  "algorithms": ["gz"],
+  "filetypes": [
+    ".html",
+    ".js",
+    ".css",
+    ".svg",
+    ".png",
+    ".jpg",
+    ".ico",
+    ".txt",
+    ".json",
+    ".mp3",
+    ".wav",
+    ".tff",
+    ".woff2"
+  ],
+  "retainUncompressedFiles": false
+}
