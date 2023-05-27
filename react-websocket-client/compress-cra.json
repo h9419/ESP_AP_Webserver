@@ -1,5 +1,4 @@
 {
-  "algorithms": ["gz"],
   "filetypes": [
     ".html",
     ".js",
@@ -15,5 +14,7 @@
     ".tff",
     ".woff2"
   ],
+  "algorithms": ["gz"],
+  "directory": "../data/www",
   "retainUncompressedFiles": false
 }

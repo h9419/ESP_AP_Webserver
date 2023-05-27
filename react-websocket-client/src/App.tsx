@@ -1,6 +1,6 @@
 import './App.css';
 import { IMessageEvent, w3cwebsocket } from 'websocket';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import Button from '@mui/material/Button';
 
 function App() {
@@ -29,13 +29,15 @@ function App() {
   const toggleLed = useCallback(() => sendUpdate({ led: !LED }), [LED]);
 
   return (
-    <div className='body'>
-      <div className="centered">
-        <div className='wrapper'>
-          <h1>Currently {LED ? "ON" : "OFF"}</h1>
-          <br />
-          <Button variant="contained" onClick={toggleLed}>{LED ? "Turn Off" : "Turn On"}</Button>
-        </div>
+    <div className="centered">
+      <div className="wrapper">
+        <h1>
+          <span>Currently </span>
+          <span>{LED ? 'ON' : 'OFF'}</span>
+        </h1>
+        <Button variant="contained" onClick={toggleLed}>
+          {LED ? 'Turn Off' : 'Turn On'}
+        </Button>
       </div>
     </div>
   );
