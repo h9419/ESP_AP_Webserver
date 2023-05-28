@@ -6,6 +6,7 @@
 #include "wsEventHandler.h"
 
 #define SSID "ESP32 SoftAP" // This is the SSID that ESP32 will broadcast
+// #define CAPTIVE_DOMAIN "http://domain-name-to-show" // This is the SSID that ESP32 will broadcast
 // Uncomment the following line to enable password in the wifi acces point
 // #define PASSWORD "12345678" // password should be atleast 8 characters to make it work
 #define DNS_PORT 53
@@ -21,7 +22,11 @@ AsyncWebSocket websocket("/ws");
 
 void redirectToIndex(AsyncWebServerRequest *request)
 {
+#ifdef CAPTIVE_DOMAIN
+  request->redirect(CAPTIVE_DOMAIN);
+#else
   request->redirect("http://" + apIP.toString());
+#endif
 }
 
 void setup()
