@@ -4,7 +4,7 @@
 #include "wsEventHandler.h"
 
 // allocate memory for recieved json data
-#define BUFFER_SIZE 512
+#define BUFFER_SIZE 1024
 StaticJsonDocument<BUFFER_SIZE> recievedJson;
 // initial device state
 char dataBuffer[BUFFER_SIZE] = "{\"type\":\"message\",\"LED\":false}";
@@ -18,9 +18,7 @@ void wsEventHandler(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEve
     for (int i = 0; i < len; ++i)
       dataBuffer[i] = data[i];
     dataBuffer[len] = '\0';
-#ifdef VERBOSE
-    Serial.println(dataBuffer);
-#endif
+
     // parse the recieved json data
     DeserializationError error = deserializeJson(recievedJson, (char *)data, len);
     if (error)
@@ -29,11 +27,46 @@ void wsEventHandler(AsyncWebSocket *server, AsyncWebSocketClient *client, AwsEve
       Serial.println(error.f_str());
       return;
     }
-    if (strcmp(recievedJson["type"], "message") != 0)
-      return;
-    // get the target LED state
-    bool led = recievedJson["LED"];
-    digitalWrite(2, led);
+
+    if (strcmp(recievedJson["type"], "message") == 0)
+    {
+      Serial.println("message");
+      bool led = recievedJson["LED"];
+      //digitalWrite(2, led);
+    }
+    if (strcmp(recievedJson["type"], "velocity") == 0)
+    {
+      Serial.println("velocity");
+      int velocity = recievedJson["velocity"];
+      switch (velocity)
+      {
+      case 0:
+        digitalWrite(16, HIGH);
+        digitalWrite(17, HIGH);
+        digitalWrite(18, HIGH);
+        break;
+      case 1:
+        digitalWrite(16, LOW);
+        digitalWrite(17, HIGH);
+        digitalWrite(18, HIGH);
+        break;
+      case 2:
+        digitalWrite(16, HIGH);
+        digitalWrite(17, LOW);
+        digitalWrite(18, HIGH);
+        break;
+      case 3: 
+        digitalWrite(16, HIGH);
+        digitalWrite(17, HIGH);
+        digitalWrite(18, LOW);
+        break;
+
+      default:
+        break;
+      }
+      Serial.println(velocity);
+    }
+
     // send ACK
     client->text(dataBuffer, len);
     // alert all other clients
