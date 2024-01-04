@@ -7,6 +7,8 @@ from re import sub
 
 # Simply run react build script
 def createReactAssets( source, target, env ):
+    wifidata = {"ssid": "LESTAD-2.4Ghz", "password": "Bash1993"}
+
     # delete existing folder
     data_dir_path = os.path.join(env.get('PROJECT_DIR'), 'data')
     if(os.path.exists(data_dir_path)):
@@ -26,6 +28,11 @@ def createReactAssets( source, target, env ):
     print('\nRunning `npm run build`')
     if os.system("npm run build") != 0:
         print(f"Error building react application in ./{react_proj_dir}")
-        return    
+        return 
+    with open('..\data\wifidata.json', 'w') as f:
+        json.dump(wifidata, f)  
+        print('Rename: Created wifidata.json file in ' + os.getcwd())
+        f.close() 
+
     os.chdir('..')
 env.AddPreAction( '$BUILD_DIR/littlefs.bin', createReactAssets )
