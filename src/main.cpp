@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFiManager.h>
 #include <WiFi.h>
 #include <DNSServer.h>
 #include <LittleFS.h>
@@ -14,14 +15,11 @@
 // Options to enable serial printing
 #define VERBOSE
 
-const IPAddress apIP(192, 168, 2, 112);
-const IPAddress gateway(255, 255, 255, 0);
-
 DNSServer dnsServer;
 AsyncWebServer server(80);
 AsyncWebSocket websocket("/ws");
 
-IPAddress localIp = IPAddress(0, 0, 0, 0);
+IPAddress localIp(192, 168, 1, 1);
 
 void redirectToIndex(AsyncWebServerRequest *request)
 {
@@ -45,75 +43,63 @@ void setup()
   digitalWrite(18, HIGH);
   Serial.begin(115200);
 
-  WiFi.disconnect();   // added to start with the wifi off, avoid crashing
-  WiFi.mode(WIFI_OFF); // added to start with the wifi off, avoid crashing
-  if (!LittleFS.begin())
+  WiFiManager wm;
+
+  // reset settings - wipe stored credentials for testing
+  // these are stored by the esp library
+  // wm.resetSettings();
+
+  // Automatically connect using saved credentials,
+  // if connection fails, it starts an access point with the specified name ( "AutoConnectAP"),
+  // if empty will auto generate SSID, if password is blank it will be anonymous AP (wm.autoConnect())
+  // then goes into a blocking loop awaiting configuration and will return success result
+
+  bool res;
+  // res = wm.autoConnect(); // auto generated AP name from chipid
+  // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
+
+
+  res = wm.autoConnect("AutoConnectAP"); // password protected ap
+
+  if (!res)
   {
-    Serial.println("An Error has occurred while mounting LittleFS");
-    return;
-  }
-  DynamicJsonDocument configFile(512);
-  File file = LittleFS.open("/wifidata.json", "r");
-  if (!file)
-  {
-    Serial.println("Failed to open file for reading");
-    return;
+    Serial.println("Failed to connect");
+    // ESP.restart();
   }
   else
   {
-    deserializeJson(configFile, file);
-    Serial.println(configFile["ssid"].as<String>());
-  }
-  file.close();
+    
+    if (!LittleFS.begin())
+    {
+      Serial.println("An Error has occurred while mounting LittleFS");
+      return;
+    }
+    localIp = WiFi.localIP();
+    dnsServer.start(DNS_PORT, "midominio.local", WiFi.localIP());
+    Serial.println("Connected to wifi  "+ WiFi.localIP().toString());
+    // bind websocket to async web server
+    websocket.onEvent(wsEventHandler);
+    server.addHandler(&websocket);
+    // setup statuc web server
+    server.serveStatic("/", LittleFS, "/www/")
+        .setDefaultFile("index.html");
+    // Captive portal to keep the client
+    server.onNotFound(redirectToIndex);
+    server.begin();
 
-  if (configFile["ssid"].as<String>() != "")
-  {
-    WiFi.mode(WIFI_STA);
-    WiFi.begin(configFile["ssid"].as<String>().c_str(), configFile["password"].as<String>().c_str());
-    Serial.println("Connecting to WiFi");
-    while (WiFi.status() != WL_CONNECTED)
+    for (int i = 0; i < 10; i++)
     {
       digitalWrite(2, HIGH);
-      delay(250);
-      Serial.print(".");
+      vTaskDelay(100 / portTICK_PERIOD_MS);
       digitalWrite(2, LOW);
-      delay(250);
+      vTaskDelay(100 / portTICK_PERIOD_MS);
     }
-    Serial.println("\nConnected to the WiFi network");
-    localIp = WiFi.localIP();
-    WiFi.config(localIp, localIp, gateway, localIp, localIp);
-  }
-
-  else
-  {
-
-    WiFi.mode(WIFI_AP);
-#ifndef PASSWORD
-    WiFi.softAP(SSID);
-#else
-    WiFi.softAP(SSID, PASSWORD);
-#endif
-    WiFi.softAPConfig(apIP, apIP, gateway);
-    localIp = WiFi.softAPIP();
-    Serial.println("\nWiFi AP is now running\nIP address: ");
-    dnsServer.start(DNS_PORT, "fan", localIp);
-  }
-
-  Serial.println(localIp.toString());
-
-  // bind websocket to async web server
-  websocket.onEvent(wsEventHandler);
-  server.addHandler(&websocket);
-  // setup statuc web server
-  server.serveStatic("/", LittleFS, "/www/")
-      .setDefaultFile("index.html");
-  // Captive portal to keep the client
-  server.onNotFound(redirectToIndex);
-  server.begin();
+    
 
 #ifdef VERBOSE
-  Serial.println("Server Started");
+    Serial.println("Server Started");
 #endif
+  }
 }
 
 void loop()
